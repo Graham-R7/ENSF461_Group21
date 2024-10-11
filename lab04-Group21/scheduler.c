@@ -10,6 +10,7 @@
 
 // total jobs
 int numofjobs = 0;
+static int current_id = 1;
 
 struct job {
     // job id is ordered by the arrival; jobs arrived first have smaller job id, always increment by 1
@@ -27,7 +28,33 @@ struct job *head = NULL;
 
 void append_to(struct job **head_pointer, int arrival, int length, int tickets){
 
-    // TODO: create a new job and init it with proper data
+    struct job* new_job = (struct job*) malloc (sizeof(struct job));
+    if(!new_job){
+        printf("Memory allocation failed");
+        return;
+    }
+
+    new_job->id = current_id++;
+    new_job->arrival = arrival;
+    new_job->length = length;
+    new_job->tickets = tickets;
+    new_job->next = NULL;
+
+    // if list is empty, insert new job at the beginning
+    if(*head_pointer == NULL){
+        *head_pointer = new_job;
+        return;
+    }
+
+    // if list is not empty we'll find the end of the list to append the new job
+    struct job* temp = *head_pointer;
+    while(temp->next != NULL){
+        temp = temp->next;
+    }
+
+    temp->next = new_job;
+
+
     return;
 }
 
