@@ -196,6 +196,7 @@ void policy_SJF()
         }
     }
 
+
     printf("End of execution with SJF.\n");
 }
 
@@ -286,10 +287,19 @@ void policy_STCF()
         }
     }
 
+    // If there's a running job at the end (unlikely in this loop, but just in case)
+    if (running_job != NULL)
+    {
+        int time_ran = current_time - running_job->run_start_time;
+        printf("%d]\n", time_ran);
+    }
+
+
     printf("End of execution with STCF.\n");
 }
 
 void policy_RR(int slice) {
+
     printf("Execution trace with RR:\n");
 
     int current_time = 0;
@@ -553,6 +563,7 @@ int main(int argc, char **argv){
             printf("End analyzing STCF.\n");
         }
     }
+
     else if (strcmp(pname, "RR") == 0)
     {
         policy_RR(slice);
