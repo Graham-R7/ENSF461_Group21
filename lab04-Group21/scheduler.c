@@ -328,7 +328,7 @@ void policy_RR(int slice) {
     printf("End of execution with RR.\n");
 }
 
-void policy_LT() {
+void policy_LT(int slice) {
     srand(42);
     printf("Execution trace with LT:\n");
 
@@ -344,29 +344,46 @@ void policy_LT() {
     }
 
     while (jobs_remaining > 0) {
-        int winning_ticket = rand() % total_tickets;
-        int ticket_counter = 0;
+        int available_tickets = 0;
+        int earliest_arrival = -1;
+        temp = head;
 
-        struct job *selected_job = head;
-        while (selected_job != NULL) {
-            ticket_counter += (selected_job->id + 1) * 100;
-            if (ticket_counter > winning_ticket && selected_job->remaining_time > 0) {
-                break;
+        while (temp != NULL) {
+            if (temp->arrival <= current_time && temp->remaining_time > 0) {
+                available_tickets += (temp->id + 1) * 100;
+            } else if (temp->arrival > current_time && (earliest_arrival == -1 || temp->arrival < earliest_arrival)) {
+                earliest_arrival = temp->arrival;
             }
-            selected_job = selected_job->next;
+            temp = temp->next;
         }
 
-        if (selected_job == NULL || selected_job->remaining_time <= 0) {
-            printf("Error: No valid job selected by lottery or job has no remaining time.\n");
-            break;
+        if (available_tickets == 0 && earliest_arrival > current_time) {
+            current_time = earliest_arrival;
+            continue;
+        }
+
+        int winning_ticket = rand() % available_tickets;
+        int ticket_counter = 0;
+
+        struct job *selected_job = NULL;
+        temp = head;
+
+        while (temp != NULL) {
+            if (temp->arrival <= current_time && temp->remaining_time > 0) {
+                ticket_counter += (temp->id + 1) * 100;
+                if (ticket_counter > winning_ticket) {
+                    selected_job = temp;
+                    break;
+                }
+            }
+            temp = temp->next;
         }
 
         if (selected_job->start_time == -1) {
             selected_job->start_time = current_time;
         }
 
-        // Run the selected job for a fixed duration of 25 ticks
-        int run_time = min(25, selected_job->remaining_time);
+        int run_time = min(slice, selected_job->remaining_time);
         printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", current_time, selected_job->id, selected_job->arrival, run_time);
 
         current_time += run_time;
@@ -575,7 +592,7 @@ int main(int argc, char **argv){
 
     else if (strcmp(pname, "LT") == 0)
     {
-        policy_LT();
+        policy_LT(slice);
 
         if (analysis == 1){
             // Perform analysis
