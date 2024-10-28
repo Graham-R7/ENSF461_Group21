@@ -119,7 +119,6 @@ void* myalloc(size_t size) {
         current = current->fwd;
     }
 
-    printf("...no suitable chunk found\n");
     statusno = ERR_OUT_OF_MEMORY;
     return NULL;
 }
